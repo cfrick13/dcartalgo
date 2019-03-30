@@ -1,0 +1,2 @@
+# dcartalgo
+Walk Descarte Automatically 
