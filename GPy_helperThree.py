@@ -4,44 +4,44 @@ import GPy
 import re
 import numpy as np
 import matplotlib.pyplot as plt
+from analysis_parameters_func import *
+# def catchImportantWords(ss20):
+#     m = re.findall(r'SMAD|GENE|doubt', ss20, re.IGNORECASE)
+#     ss21 = m[0]
 
-def catchImportantWords(ss20):
-    m = re.findall(r'SMAD|GENE|doubt', ss20, re.IGNORECASE)
-    ss21 = m[0]
-
-    if bool(re.search('GENE',ss21)):
-        m = re.findall(r'caga|iffl|median|total|doubt', ss20, re.IGNORECASE)
-        ss22 = str(m[0])
-        ss2 = ss22
-        newstrsub = ss2
-        if bool(re.findall(r'median|total', ss22, re.IGNORECASE)):
-            ss2 = ss22+' $\itsnail$:mCherry' 
-            newstrsub = '$\itsnail$:mCherry' 
-        if bool(re.findall(r'SYST1|doubt', ss20, re.IGNORECASE)):
-            ss2 = ss22 + ', f(Smad complex)' 
-            newstrsub = ss22
-        elif bool(re.findall(r'SYST2|doubt', ss20, re.IGNORECASE)):
-            ss2 = ss22 + ', f(Smad complex, X)' 
-            newstrsub = ss22
-        elif bool(re.findall(r'SYST3|doubt', ss20, re.IGNORECASE)):
-            ss2 = ss22 + ', f(Smad complex, many X)' 
-            newstrsub = ss22
+#     if bool(re.search('GENE',ss21)):
+#         m = re.findall(r'caga|iffl|median|total|doubt', ss20, re.IGNORECASE)
+#         ss22 = str(m[0])
+#         ss2 = ss22
+#         newstrsub = ss2
+#         if bool(re.findall(r'median|total', ss22, re.IGNORECASE)):
+#             ss2 = ss22+' $\itsnail$:mCherry' 
+#             newstrsub = '$\itsnail$:mCherry' 
+#         if bool(re.findall(r'SYST1|doubt', ss20, re.IGNORECASE)):
+#             ss2 = ss22 + ', f(Smad complex)' 
+#             newstrsub = ss22
+#         elif bool(re.findall(r'SYST2|doubt', ss20, re.IGNORECASE)):
+#             ss2 = ss22 + ', f(Smad complex, X)' 
+#             newstrsub = ss22
+#         elif bool(re.findall(r'SYST3|doubt', ss20, re.IGNORECASE)):
+#             ss2 = ss22 + ', f(Smad complex, many X)' 
+#             newstrsub = ss22
 
 
-    else:
-        m = re.findall(r'rsmad|complex|median|total|doubt', ss20, re.IGNORECASE)
-        ss22 = str(m[0])
-        ss2 = ss22
-        newstrsub = 'R-Smad'
-        if bool(re.findall(r'median|total', ss22, re.IGNORECASE)):
-            newstrsub = 'NG-Smad3'
-            ss2 = ss22 +' NG-Smad3' 
-        elif bool(re.findall(r'complex|doubt', ss22, re.IGNORECASE)):
-            ss2 = 'Smad ' + ss22
-            newstrsub = 'Smad complex'
+#     else:
+#         m = re.findall(r'rsmad|complex|median|total|doubt', ss20, re.IGNORECASE)
+#         ss22 = str(m[0])
+#         ss2 = ss22
+#         newstrsub = 'R-Smad'
+#         if bool(re.findall(r'median|total', ss22, re.IGNORECASE)):
+#             newstrsub = 'NG-Smad3'
+#             ss2 = ss22 +' NG-Smad3' 
+#         elif bool(re.findall(r'complex|doubt', ss22, re.IGNORECASE)):
+#             ss2 = 'Smad ' + ss22
+#             newstrsub = 'Smad complex'
 
-    newstr = ss2
-    return newstr,newstrsub
+#     newstr = ss2
+#     return newstr,newstrsub
 
 def msefunc(xp,Y):
     mseeach={}
@@ -237,7 +237,7 @@ def Gpy_mse_plot_OTHER(m,X,Y,inputstr,predtstr,titlestr,fig,nop,i_P):
 #         else:
 #             titlestr2 = titlestr +'when does this happen'
         xlabelstr='original'
-        if i<x1s:
+        if i<x1s-1:
             xlabelstr=''
         tst1 = str([i+1])
         tst2 = titlestr
@@ -497,3 +497,101 @@ def predictOTHER_DMAP_BasedOnDMAP_hiddenvarSIMPLER(time_data,ss10,ss20,X0,X2,sda
     fig.add_axes([0,0,1,1]).axis("off")
     plt.show()
     return msekeeper
+
+
+def predictOTHER_DMAP_BasedOnDMAP_hiddenvarBAR(time_data,ss10,ss20,X0,X2,sdat1,sdat2,ev_in,ev_out,savepath,fontsize,hvarName,hvarmat):
+#             predSpecificBasedOnDMAP(time_data,ss10,ss20,X,X2,sdat1,sdat2)
+    import scipy.signal as scifp
+    import GPy
+
+    ss1,ss1sub = catchImportantWords(ss10)
+    ss2,ss2sub = catchImportantWords(ss20)
+    #first make a plot with multiple panels of the dmaps trying to predict specific values
+    ss3 = 'experimental data'
+    if bool(re.search('SYST',ss10)):
+        ss3 = ss10
+    elif bool(re.search('SYST',ss20)):
+        ss3 = ss20
+    elif bool(re.search('exp3',ss20)):
+        ss3 = 'experiment= exp3'
+    elif bool(re.search('exp4',ss20)):
+        ss3 = 'experiment= exp4'
+    elif bool(re.search('exp3',ss10)):
+        ss3 = 'experiment= exp3'
+    elif bool(re.search('exp4',ss10)):
+        ss3 = 'experiment= exp4'
+        
+    evinstr = str(ev_in)
+    evinstr = evinstr.replace(']', ','+hvarName[0] +']')
+    suptitlestr = 'predict ' + ss2 + ' DMAP, '+str(ev_out)+' using ' + ss1 + ' DMAP, '+ evinstr + ', (' + ss3 + ' + '+hvarName[0] + ' )' 
+    max_f_eval = 1000
+    messages=False    
+    inputstr = ss1sub + ' DMAP'
+    ev_combo = [int(x) for x in range(len(ev_in))]
+    dmapcombos = getCombos2(ev_combo,len(ev_combo)-2) 
+    dmap1 = ev_combo
+    dmap2 = ev_combo.copy()
+    dmap2.append(len(ev_combo))
+    dmapcombos = [dmap2]
+    print(dmapcombos)
+    
+    nop = len(dmapcombos) #number of panels across
+#     xs1 = X2.shape[1] #number of panels down
+    
+    
+    axW = 2
+    axH = 2
+    gapW = 2.2
+    gapH = 1
+    fW,fH,left,right,top,bottom,wspace,hspace = makeFigureWithDefinedSubplotAxes(axW,axH,gapW,gapH,numX=1,numY=1)
+    fsize = (fW,fH)
+    fig = plt.figure(figsize=fsize)
+    msekeeper={}
+    for j in range(hvarmat.shape[1]):
+        print(j,'/',hvarmat.shape[1],end=', ')
+        
+        hiddenvarvec = hvarmat[:,j].copy()
+        dmap_ev_in = dmapcombos[0]
+        X00 = np.vstack((X0.T,hiddenvarvec.T)).T
+        X1 = X00[:,dmap_ev_in]
+
+        if X1.shape[1]>1:
+            X = X1
+        else:
+            X = X1.reshape(-1,1)
+
+
+        if X2.shape[1]>1:
+            Y = X2
+        else:
+            Y = X2.reshape(-1,1)
+
+        predtstr = ss2sub+str(j)
+        predtstr = str(j)
+        inputstr = ss1sub
+
+        titlestr = str([x+1 for x in dmap_ev_in])
+        titlestr = titlestr.replace(str(len(ev_combo)+1),hvarName[0]+str(j))
+
+        m = GPymadness(X,Y,messages,max_f_eval,inputstr,predtstr,titlestr)
+        mseeach = Gpy_mse_plot_OTHERBAR(m,X,Y,inputstr,predtstr,titlestr,fig,nop,j+1)
+        msekeeper[predtstr]=mseeach
+
+    return msekeeper
+
+#     msevalues = np.asarray(msekeeper.values())
+#     xvalues = np.arange(1,len(msevalues),msevalues)
+#     plt.bar(xvalues,msevalues,0.3)
+#     fig.suptitle(t=suptitlestr,x=0.5,y=1.05,fontsize=fontsize*1.2,fontweight = 'bold')
+#     fig.subplots_adjust(wspace=wspace,hspace=hspace,left=left,right=right,bottom=bottom,top=top)
+#     savestr = savepath+ ss10 + 'predictions of ' + ss20 +' '+ hvarName[0] + '.png'
+#     plt.savefig(savestr,bbox_inches='tight')
+#     fig.add_axes([0,0,1,1]).axis("off")
+#     plt.show()
+#     return msekeeper
+
+
+def Gpy_mse_plot_OTHERBAR(m,X,Y,inputstr,predtstr,titlestr,fig,nop,i_P):
+    xp,xstd = m.predict(X)
+    x1,y1, mse, mseeach = msefunc(xp,Y)
+    return mseeach

@@ -4,44 +4,45 @@ import GPy
 import re
 import numpy as np
 import matplotlib.pyplot as plt
+from analysis_parameters_func import *
 
-def catchImportantWords(ss20):
-    m = re.findall(r'SMAD|GENE|doubt', ss20, re.IGNORECASE)
-    ss21 = m[0]
+# def catchImportantWords(ss20):
+#     m = re.findall(r'SMAD|GENE|doubt', ss20, re.IGNORECASE)
+#     ss21 = m[0]
 
-    if bool(re.search('GENE',ss21)):
-        m = re.findall(r'caga|iffl|median|total|doubt', ss20, re.IGNORECASE)
-        ss22 = str(m[0])
-        ss2 = ss22
-        newstrsub = ss2
-        if bool(re.findall(r'median|total', ss22, re.IGNORECASE)):
-            ss2 = ss22+' $\itsnail$:mCherry' 
-            newstrsub = '$\itsnail$:mCherry' 
-        if bool(re.findall(r'SYST1|doubt', ss20, re.IGNORECASE)):
-            ss2 = ss22 + ', f(Smad complex)' 
-            newstrsub = ss22
-        elif bool(re.findall(r'SYST2|doubt', ss20, re.IGNORECASE)):
-            ss2 = ss22 + ', f(Smad complex, X)' 
-            newstrsub = ss22
-        elif bool(re.findall(r'SYST3|doubt', ss20, re.IGNORECASE)):
-            ss2 = ss22 + ', f(Smad complex, many X)' 
-            newstrsub = ss22
+#     if bool(re.search('GENE',ss21)):
+#         m = re.findall(r'caga|iffl|median|total|doubt', ss20, re.IGNORECASE)
+#         ss22 = str(m[0])
+#         ss2 = ss22
+#         newstrsub = ss2
+#         if bool(re.findall(r'median|total', ss22, re.IGNORECASE)):
+#             ss2 = ss22+' $\itsnail$:mCherry' 
+#             newstrsub = '$\itsnail$:mCherry' 
+#         if bool(re.findall(r'SYST1|doubt', ss20, re.IGNORECASE)):
+#             ss2 = ss22 + ', f(Smad complex)' 
+#             newstrsub = ss22
+#         elif bool(re.findall(r'SYST2|doubt', ss20, re.IGNORECASE)):
+#             ss2 = ss22 + ', f(Smad complex, X)' 
+#             newstrsub = ss22
+#         elif bool(re.findall(r'SYST3|doubt', ss20, re.IGNORECASE)):
+#             ss2 = ss22 + ', f(Smad complex, many X)' 
+#             newstrsub = ss22
 
 
-    else:
-        m = re.findall(r'rsmad|complex|median|total|doubt', ss20, re.IGNORECASE)
-        ss22 = str(m[0])
-        ss2 = ss22
-        newstrsub = 'R-Smad'
-        if bool(re.findall(r'median|total', ss22, re.IGNORECASE)):
-            newstrsub = 'NG-Smad3'
-            ss2 = ss22 +' NG-Smad3' 
-        elif bool(re.findall(r'complex|doubt', ss22, re.IGNORECASE)):
-            ss2 = 'Smad ' + ss22
-            newstrsub = 'Smad complex'
+#     else:
+#         m = re.findall(r'rsmad|complex|median|total|doubt', ss20, re.IGNORECASE)
+#         ss22 = str(m[0])
+#         ss2 = ss22
+#         newstrsub = 'R-Smad'
+#         if bool(re.findall(r'median|total', ss22, re.IGNORECASE)):
+#             newstrsub = 'NG-Smad3'
+#             ss2 = ss22 +' NG-Smad3' 
+#         elif bool(re.findall(r'complex|doubt', ss22, re.IGNORECASE)):
+#             ss2 = 'Smad ' + ss22
+#             newstrsub = 'Smad complex'
 
-    newstr = ss2
-    return newstr,newstrsub
+#     newstr = ss2
+#     return newstr,newstrsub
 
 def msefunc(xp,Y):
     mseeach={}
@@ -195,9 +196,9 @@ def predictSELF_BasedOnDMAP(time_data,ss10,ss20,X0,X2,sdat1,sdat2,ev_in,savepath
     plt.show()
     return msekeeper
 
-def getCombos(ev_in):
+def getCombos(ev_in,combomin):
     from itertools import combinations
-    ll1 = [list(combinations(ev_in,x+1)) for x in range(0,len(ev_in))]  
+    ll1 = [list(combinations(ev_in,x+1)) for x in range(combomin-1,len(ev_in))]  
 
     newlist=list()
     for x in range(0,len(ll1)): 
@@ -237,7 +238,7 @@ def Gpy_mse_plot_OTHER(m,X,Y,inputstr,predtstr,titlestr,fig,nop,i_P):
 #         else:
 #             titlestr2 = titlestr +'when does this happen'
         xlabelstr='original'
-        if i<x1s:
+        if i<(x1s-1):
             xlabelstr=''
         tst1 = str([i+1])
         tst2 = titlestr
@@ -252,13 +253,14 @@ def Gpy_mse_plot_OTHER(m,X,Y,inputstr,predtstr,titlestr,fig,nop,i_P):
             plt.ylabel('predicted')                    
        
         if x1.shape[1]>1:
-            titlestr2 = 'pred. '+ predtstr + tst1 + ',  use ' + inputstr + tst2
+            titlestr2 = 'pred. '+ predtstr + tst1 + '\nuse ' + inputstr + tst2
         else:
             titlestr2 = titlestr +'when does this happen'
             
         print(titlestr2)
-        plt.title(titlestr2)
+        
         ax = plt.gca()
+        ax.set_title(titlestr2,pad=6)
         xgap = np.max(x)-np.min(x)
         ygap = np.max(y)-np.min(y)
         ax.set_xlim(np.min(x) - xgap*0.1,np.max(x) + xgap*0.1)
@@ -330,6 +332,10 @@ def predictOTHER_DMAP_BasedOnDMAP(time_data,ss10,ss20,X0,X2,sdat1,sdat2,ev_in,ev
         ss3 = 'experiment= exp3'
     elif bool(re.search('exp4',ss10)):
         ss3 = 'experiment= exp4'
+    elif bool(re.search('exp5',ss10)):
+        ss3 = 'experiment= exp5'
+    elif bool(re.search('exp5',ss20)):
+        ss3 = 'experiment= exp5'
         
 
     suptitlestr = 'predict ' + ss2 + ' DMAP, '+str(ev_out)+' using ' + ss1 + ' DMAP, '+ str(ev_in) + ', (' + ss3 + ')'
@@ -339,7 +345,7 @@ def predictOTHER_DMAP_BasedOnDMAP(time_data,ss10,ss20,X0,X2,sdat1,sdat2,ev_in,ev
     inputstr = ss1sub + ' DMAP'
           
     ev_combo = [int(x) for x in range(len(ev_in))]
-    dmapcombos = getCombos(ev_combo)  
+    dmapcombos = getCombos(ev_combo,np.max((2,len(ev_in)-2)))  
     
     nop = len(dmapcombos) #number of panels across
     xs1 = X2.shape[1] #number of panels down

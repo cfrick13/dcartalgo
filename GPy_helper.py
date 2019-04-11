@@ -4,44 +4,49 @@ import GPy
 import re
 import numpy as np
 import matplotlib.pyplot as plt
+from analysis_parameters_func import *
 
-def catchImportantWords(ss20):
-    m = re.findall(r'SMAD|GENE|doubt', ss20, re.IGNORECASE)
-    ss21 = m[0]
+# def catchImportantWords(ss20):
+#     m = re.findall(r'SMAD|SNAIL|GENE|RFP|doubt', ss20, re.IGNORECASE)
+#     ss21 = m[0]
 
-    if bool(re.search('GENE',ss21)):
-        m = re.findall(r'caga|iffl|median|total|doubt', ss20, re.IGNORECASE)
-        ss22 = str(m[0])
-        ss2 = ss22
-        newstrsub = ss2
-        if bool(re.findall(r'median|total', ss22, re.IGNORECASE)):
-            ss2 = ss22+' $\itsnail$:mCherry' 
-            newstrsub = '$\itsnail$:mCherry' 
-        if bool(re.findall(r'SYST1|doubt', ss20, re.IGNORECASE)):
-            ss2 = ss22 + ', f(Smad complex)' 
-            newstrsub = ss22
-        elif bool(re.findall(r'SYST2|doubt', ss20, re.IGNORECASE)):
-            ss2 = ss22 + ', f(Smad complex, X)' 
-            newstrsub = ss22
-        elif bool(re.findall(r'SYST3|doubt', ss20, re.IGNORECASE)):
-            ss2 = ss22 + ', f(Smad complex, many X)' 
-            newstrsub = ss22
+#     if bool(re.search('GENE|RFP|SNAIL',ss21,re.IGNORECASE)):
+#         m = re.findall(r'caga|iffl|median|total|doubt', ss20, re.IGNORECASE)
+#         ss22 = str(m[0])
+#         if re.search('RFP|GENE',ss21,re.IGNORECASE):
+#             ss22 = ss21+ss22
+        
+#         ss2 = ss22
+#         newstrsub = ss2
+        
+#         if bool(re.findall(r'median|total', ss22, re.IGNORECASE)):
+#             ss2 = ss22+' $\itsnail$:mCherry' 
+#             newstrsub = '$\itsnail$:mCherry' 
+#         if bool(re.findall(r'SYST1|doubt', ss20, re.IGNORECASE)):
+#             ss2 = ss22 + ', f(Smad complex)' 
+#             newstrsub = ss22
+#         elif bool(re.findall(r'SYST2|doubt', ss20, re.IGNORECASE)):
+#             ss2 = ss22 + ', f(Smad complex, X)' 
+#             newstrsub = ss22
+#         elif bool(re.findall(r'SYST3|doubt', ss20, re.IGNORECASE)):
+#             ss2 = ss22 + ', f(Smad complex, many X)' 
+#             newstrsub = ss22
 
 
-    else:
-        m = re.findall(r'rsmad|complex|median|total|doubt', ss20, re.IGNORECASE)
-        ss22 = str(m[0])
-        ss2 = ss22
-        newstrsub = 'R-Smad'
-        if bool(re.findall(r'median|total', ss22, re.IGNORECASE)):
-            newstrsub = 'NG-Smad3'
-            ss2 = ss22 +' NG-Smad3' 
-        elif bool(re.findall(r'complex|doubt', ss22, re.IGNORECASE)):
-            ss2 = 'Smad ' + ss22
-            newstrsub = 'Smad complex'
+#     else:
+#         m = re.findall(r'rsmad|complex|median|total|doubt', ss20, re.IGNORECASE)
+#         ss22 = str(m[0])
+#         ss2 = ss22
+#         newstrsub = 'R-Smad'
+#         if bool(re.findall(r'median|total', ss22, re.IGNORECASE)):
+#             newstrsub = 'NG-Smad3'
+#             ss2 = ss22 +' NG-Smad3' 
+#         elif bool(re.findall(r'complex|doubt', ss22, re.IGNORECASE)):
+#             ss2 = 'Smad ' + ss22
+#             newstrsub = 'Smad complex'
 
-    newstr = ss2
-    return newstr,newstrsub
+#     newstr = ss2
+#     return newstr,newstrsub
 
 def msefunc(xp,Y):
     mseeach={}
@@ -68,7 +73,7 @@ def GPymadness(X,Y,messages,max_f_eval,inputstr,predtstr,titlestr):
     m.optimize(messages=messages,max_f_eval = max_f_eval)
     return m
 
-def Gpy_mse_plot(m,X,Y,inputstr,predtstr,titlestr):
+def Gpy_mse_plot(m,X,Y,inputstr,predtstr,titlestr,x1s):
     msize=20
     xp,xstd = m.predict(X)
     x1,y1, mse, mseeach = msefunc(xp,Y)
@@ -125,7 +130,10 @@ def predictSELF_BasedOnDMAP(time_data,ss10,X0,sdat1,ev_in,savepath,fontsize):
     max_f_eval = 1000
     messages=False    
     inputstr = ss10 + ' DMAP'
-    Yarray = [sdat1,fc,diff,relrate,integral,relrate,integral]
+#     Yarray = [sdat1,fc,diff,relrate,integral,relrate,integral]
+    Yarray = [sdat1,fc,diff,relrate,integral]
+#     Yarray = [sdat1]
+    titlestrarray = ['level, t=', 'foldchange, t=', 'difference, t=','rate/basal,t=','integral, t=', 'max(rate/basal)','max(integral)']
     titlestrarray = ['level, t=', 'foldchange, t=', 'difference, t=','rate/basal,t=','integral, t=', 'max(rate/basal)','max(integral)']
     tvalarray = np.zeros(len(Yarray))
 #     tvalarray = [30, 30, 30, 0, 0]
@@ -158,7 +166,7 @@ def predictSELF_BasedOnDMAP(time_data,ss10,X0,sdat1,ev_in,savepath,fontsize):
     plt.show()
 
 
-    nop = len(titlestrarray) #number of panels
+    nop = len(Yarray) #number of panels
     axW = 2
     axH = 2
     gapW = 1
@@ -190,7 +198,7 @@ def predictSELF_BasedOnDMAP(time_data,ss10,X0,sdat1,ev_in,savepath,fontsize):
 
         m = GPymadness(X,Y,messages,max_f_eval,inputstr,predtstr,titlestr)
         ax = fig.add_subplot(1,nop,i+1)
-        mseeach = Gpy_mse_plot(m,X,Y,inputstr,predtstr,titlestr)
+        mseeach = Gpy_mse_plot(m,X,Y,inputstr,predtstr,titlestr,nop)
         msekeeper[predtstr]=mseeach
 
     plt.suptitle(t=suptitlestr,x=0.5,y=1.2,fontsize=fontsize*1.2,fontweight = 'bold')
